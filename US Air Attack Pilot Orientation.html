@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air Attack Pilot Orientation — Coulson Aviation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Serif+Display&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root {
+  --bg: #111113;
+  --bg-card: #1A1B1E;
+  --border: rgba(255,255,255,0.06);
+  --red: #D00000;
+  --red-glow: rgba(208,0,0,0.08);
+  --red-line: rgba(208,0,0,0.35);
+  --text: #E8EAED;
+  --text-dim: rgba(232,234,237,0.48);
+  --text-mid: rgba(232,234,237,0.68);
+  --metal: #6B6E75;
+  --accent-blue: #5B7BD7;
+  --success: #5A9A6B;
+  --caution: #A8832E;
+  --error: #C45858;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+/* ─── SLIDES ─── */
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7vh 7vw 7vh 8vw;opacity:0;visibility:hidden;transition:opacity 0.4s ease;overflow:hidden}
+.slide.active{opacity:1;visibility:visible}
+
+/* Terrain ridgelines background */
+.slide::before{content:none}
+.ridgelines{position:absolute;bottom:0;left:0;right:0;pointer-events:none;z-index:0;padding-bottom:0}
+.ridgelines svg{display:block;width:100%;position:absolute;bottom:0;left:0}
+
+/* Red thread — thin vertical line left edge */
+.slide::after{content:'';position:absolute;left:4.5vw;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent 15%,var(--red-line) 30%,var(--red-line) 70%,transparent 85%);pointer-events:none}
+
+/* ─── SECTION LABEL ─── */
+.section-label{font-family:'DM Sans';font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--metal);margin-bottom:32px;padding-left:2px}
+
+/* ─── TITLE ─── */
+.slide-title{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(38px,5.2vw,58px);line-height:1.12;color:var(--text);margin-bottom:12px;position:relative}
+
+/* Red accent dash under title */
+.title-rule{width:40px;height:2px;background:var(--red);margin:16px 0 28px;border-radius:1px}
+
+/* ─── BODY ─── */
+.slide-body{max-width:68%}
+
+.key-line{font-family:'DM Sans';font-size:clamp(20px,2.2vw,26px);font-weight:500;line-height:1.5;color:var(--text);margin-bottom:14px}
+
+.supporting{font-family:'DM Sans';font-size:clamp(15px,1.5vw,19px);font-weight:400;line-height:1.6;color:var(--text-dim);margin-bottom:10px}
+
+/* ─── ITEMS ROW ─── */
+.items{display:flex;flex-wrap:wrap;gap:6px 0;margin:8px 0 14px}
+.items span{font-size:clamp(14px,1.4vw,17px);font-weight:400;color:var(--text-dim)}
+.items span+span::before{content:'·';margin:0 14px;color:var(--metal);font-weight:700}
+
+/* ─── STAT GRID (slide 22) ─── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px 56px;max-width:480px;margin-bottom:28px}
+.stat-value{font-family:'JetBrains Mono',monospace;font-size:clamp(30px,3.2vw,40px);color:var(--red);letter-spacing:-0.03em;line-height:1.2}
+.stat-label{font-size:13px;font-weight:400;color:var(--text-dim);margin-top:4px;letter-spacing:0.02em}
+
+/* ─── BRIGHT LINES LIST (slide 26) ─── */
+.bright-list{list-style:none;margin:0 0 20px}
+.bright-list li{font-size:clamp(17px,1.7vw,21px);font-weight:400;color:var(--text-mid);padding:12px 0 12px 22px;border-bottom:1px solid var(--border);position:relative}
+.bright-list li::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:5px;height:5px;background:var(--red);border-radius:1px}
+.bright-list li:last-child{border-bottom:none}
+
+/* ─── FRAT (slide 27) ─── */
+.frat-row{display:flex;gap:36px;margin-bottom:28px}
+.frat-item{display:flex;align-items:center;gap:10px}
+.frat-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.3)}
+.frat-label{font-size:clamp(15px,1.4vw,17px);color:var(--text-dim)}
+
+/* ─── ORG CHART (slide 6) ─── */
+/* Standard top-down org chart */
+.org{text-align:center;margin:4px 0 10px}
+.org ul{display:flex;justify-content:center;gap:0;padding:0;margin:0;list-style:none;position:relative}
+.org ul::before{content:'';position:absolute;top:0;left:25%;right:25%;height:1px;background:rgba(255,255,255,0.12)}
+.org li{display:flex;flex-direction:column;align-items:center;padding:0 8px;position:relative}
+/* Vertical lines down from parent */
+.org li::before{content:'';position:absolute;top:-14px;left:50%;width:1px;height:14px;background:rgba(255,255,255,0.12)}
+/* Hide connector on single-root items */
+.org>.org-box+ul>li::before{content:'';height:14px}
+.org>ul::before{display:none}
+.org .vline{width:1px;height:14px;background:rgba(255,255,255,0.12);margin:0 auto}
+/* Node box */
+.org .org-box{background:var(--bg-card);border:1px solid rgba(255,255,255,0.08);padding:5px 12px;display:inline-block;white-space:nowrap;position:relative}
+.org .org-box.hl{border-color:var(--red);background:rgba(208,0,0,0.06)}
+.org .org-box .nm{font-size:11px;font-weight:600;color:var(--text)}
+.org .org-box .rl{font-size:9px;color:var(--text-dim);margin-top:1px}
+/* Horizontal bar connecting children */
+.org .hbar{height:1px;background:rgba(255,255,255,0.12);margin:0 auto;position:relative}
+
+
+/* ─── TITLE SLIDE ─── */
+.slide.title-slide{justify-content:center;align-items:center;text-align:center;padding:0}
+.slide.title-slide::after{display:none}
+.slide.title-slide .slide-title{font-size:clamp(46px,6.5vw,76px);margin-bottom:8px}
+.slide.title-slide .title-rule{margin:16px auto 24px;width:48px;height:2px}
+.slide.title-slide .subtitle{font-family:'DM Sans';font-size:13px;font-weight:500;letter-spacing:0.2em;color:var(--text-dim)}
+
+/* ─── CLOSING SLIDE ─── */
+.slide.closing-slide{justify-content:center;align-items:center;text-align:center}
+.slide.closing-slide::after{display:none}
+.slide.closing-slide .slide-title{font-size:clamp(42px,6vw,68px);margin-bottom:8px}
+.slide.closing-slide .title-rule{margin:16px auto 24px;width:48px}
+.slide.closing-slide .subtitle{font-family:'DM Sans';font-size:14px;font-weight:500;letter-spacing:0.2em;color:var(--text-dim)}
+
+/* ─── LOGO ─── */
+.logo{position:absolute;bottom:32px;right:48px;width:135px;opacity:0.5}
+.logo-fixed{position:fixed;bottom:20px;right:48px;width:120px;opacity:0.5;z-index:50}
+.logo-fixed svg{width:100%;height:auto;display:block}
+.logo svg{width:100%;height:auto;display:block}
+.slide:not(.title-slide):not(.closing-slide) .logo{display:none}
+.slide.title-slide .logo,.slide.closing-slide .logo{position:relative;bottom:auto;right:auto;width:160px;opacity:0.28;margin-top:44px}
+
+/* ─── NOTES PANEL ─── */
+.notes-panel{position:fixed;bottom:0;left:0;right:0;max-height:32vh;background:var(--bg-card);border-top:1px solid rgba(255,255,255,0.08);padding:20px 48px 24px;transform:translateY(100%);transition:transform 0.3s ease;z-index:200;overflow-y:auto;backdrop-filter:blur(8px)}
+.notes-panel.visible{transform:translateY(0)}
+.notes-label{font-family:'DM Sans';font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--metal);margin-bottom:10px}
+.notes-text{font-family:'DM Sans';font-size:15px;font-weight:400;line-height:1.7;color:var(--text-mid);max-width:780px}
+
+/* ─── PROGRESS ─── */
+.progress-bar{position:fixed;bottom:0;left:0;height:2px;background:var(--red);transition:width 0.4s ease;z-index:100}
+.slide-counter{position:fixed;bottom:16px;left:48px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--metal);z-index:100;letter-spacing:0.08em}
+
+/* ─── ANIMATIONS ─── */
+.slide.active .section-label,
+.slide.active .slide-title,
+.slide.active .title-rule,
+.slide.active .slide-body>*,
+.slide.active .subtitle{animation:rise .5s ease 0s both}
+.slide.active .title-rule{animation:widen .5s ease 0s both}
+
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes widen{from{opacity:0;width:0}to{opacity:1;width:40px}}
+</style>
+</head>
+<body>
+
+<!-- Hidden SVG defs for logo reuse -->
+<svg style="position:absolute;width:0;height:0"><defs><g id="cl"><path fill="#fff" d="M20.16,12.4c5.52-4.26,12.55-6.35,20.41-6.35,4.08,0,9.83.82,13.38,1.79.91.22,1.44.37,2.12.3.08,1.72.45,6.42,1.06,10.98-.38.52-1.51.6-2.04.15-1.13-5.08-4.54-10.91-15.5-10.91-11.57,0-21.39,7.25-21.39,22.71s10.05,24.35,22.45,24.35c9.75,0,14.06-6.28,15.8-10.68.53-.37,1.66-.22,1.97.3-.53,3.88-2.49,8.82-3.63,10.23-.91.15-1.81.45-2.65.75-1.66.6-7.11,1.72-11.94,1.72-6.8,0-13.31-1.34-18.82-5.01-6.05-4.11-10.74-10.91-10.74-20.54,0-8.29,3.78-15.39,9.53-19.8Z"/><path fill="#fff" d="M60.59,32.42c0-14.94,11.37-26.37,26.97-26.37,17.5,0,26.29,12.48,26.29,25.62,0,15.09-11.67,26.07-26.29,26.07-16.82,0-26.97-11.88-26.97-25.33ZM106.28,33.99c0-12.33-5.53-25.62-20-25.62-7.88,0-18.11,5.3-18.11,21.67,0,11.06,5.46,25.4,20.38,25.4,9.09,0,17.73-6.72,17.73-21.44Z"/><path fill="#fff" d="M157.05,25.88c0-4.72-.15-13.46-1.43-15.75-.53-.91-1.88-1.45-3.77-1.6l-1.88-.15c-.45-.53-.3-1.52.15-1.83,2.86.15,5.65.23,8.59.23,3.16,0,5.2-.08,7.91-.23.6.38.53,1.37.15,1.83l-1.81.15c-1.88.15-3.31.84-3.77,1.83-1.05,2.51-1.05,11.26-1.05,15.52v8.6c0,6.62-1.05,13.62-5.27,18.18-3.24,3.58-8.81,5.55-14.38,5.55-5.2,0-10.39-.99-14.08-4.18-3.99-3.35-5.87-8.9-5.87-17.95v-17.95c0-7.91-.15-9.2-4.52-9.58l-1.88-.15c-.45-.3-.3-1.6.15-1.83,3.77.15,6.33.23,9.34.23s5.57-.08,9.26-.23c.45.23.6,1.52.15,1.83l-1.81.15c-4.37.38-4.52,1.67-4.52,9.58v16.43c0,12.25,3.77,20.31,15.29,20.31,10.92,0,15.06-8.67,15.06-20.23v-8.75Z"/><path fill="#fff" d="M177.72,18.45c0-7.84-.15-9.04-4.97-9.41l-1.91-.15c-.46-.3-.31-1.64.15-1.87,4.28.15,6.88.22,9.94.22s5.58-.07,9.41-.22c.46.22.61,1.57.15,1.87l-1.84.15c-4.51.37-4.67,1.57-4.67,9.41v26c0,4.71.23,6.65,1.61,8.07.84.82,2.29,1.72,8.34,1.72,6.5,0,8.11-.3,9.33-.97,1.53-.9,3.52-3.59,5.05-7.4.46-.37,1.91-.07,1.91.45,0,.82-2.14,8.44-3.21,10.46-3.9-.15-11.17-.22-19.05-.22h-7.04c-3.21,0-5.66.07-9.94.22-.46-.22-.61-1.42-.15-1.87l2.29-.22c4.44-.45,4.59-1.49,4.59-9.34v-26.89Z"/><path fill="#fff" d="M226.69,57.75c-6.42,0-10.47-1.94-11.92-2.76-.92-1.64-1.91-6.95-2.06-10.46.38-.52,1.53-.67,1.83-.22,1.15,3.81,4.28,11.13,13.14,11.13,6.42,0,9.55-4.11,9.55-8.59,0-3.29-.69-6.95-6.26-10.46l-7.26-4.63c-3.82-2.47-8.25-6.72-8.25-12.85,0-7.1,5.65-12.85,15.59-12.85,2.37,0,5.12.45,7.11.97.99.3,2.06.45,2.67.45.69,1.79,1.37,5.98,1.37,9.11-.31.45-1.53.67-1.91.22-.99-3.59-3.06-8.44-10.39-8.44s-9.09,4.86-9.09,8.29c0,4.33,3.67,7.47,6.49,9.19l6.11,3.74c4.81,2.91,9.55,7.25,9.55,14.34,0,8.22-6.34,13.82-16.27,13.82Z"/><path fill="#fff" d="M247.58,32.42c0-14.94,11.23-26.37,26.66-26.37,17.3,0,25.98,12.48,25.98,25.62,0,15.09-11.53,26.07-25.98,26.07-16.62,0-26.66-11.88-26.66-25.33ZM292.74,33.99c0-12.33-5.47-25.62-19.77-25.62-7.79,0-17.9,5.3-17.9,21.67,0,11.06,5.39,25.4,20.14,25.4,8.99,0,17.52-6.72,17.52-21.44Z"/><path fill="#fff" d="M349.9,43.85c0,2.24,0,11.13.23,13.07-.15.45-.62.82-1.46.82-.92-1.27-3.16-3.88-9.85-11.28l-17.86-19.72c-2.08-2.32-7.31-8.44-8.93-10.09h-.15c-.31.9-.38,2.61-.38,4.86v16.29c0,3.51.08,13.22,1.39,15.46.46.82,2,1.27,3.93,1.42l2.39.22c.46.6.39,1.49-.15,1.87-3.46-.15-6.16-.22-9.01-.22-3.23,0-5.31.07-8.01.22-.54-.37-.62-1.42-.15-1.87l2.08-.22c1.77-.22,3-.67,3.39-1.49,1.08-2.69,1-11.8,1-15.39v-21.59c0-2.09-.08-3.66-1.69-5.38-1.08-1.05-2.93-1.57-4.77-1.79l-1.31-.15c-.46-.45-.46-1.57.15-1.87,3.23.22,7.31.22,8.7.22,1.23,0,2.54-.07,3.54-.22,1.54,3.81,10.62,13.67,13.16,16.44l7.47,8.14c5.31,5.75,9.08,9.94,12.7,13.52h.15c.31-.37.31-1.57.31-3.14v-15.99c0-3.51-.08-13.22-1.54-15.46-.46-.67-1.69-1.12-4.77-1.49l-1.31-.15c-.54-.45-.46-1.64.15-1.87,3.54.15,6.16.22,9.08.22,3.31,0,5.31-.07,7.93-.22.62.37.62,1.42.15,1.87l-1.08.15c-2.46.37-4,.97-4.31,1.57-1.31,2.69-1.15,11.95-1.15,15.39v17.85Z"/><path fill="#fff" d="M36.75,100.4c-.53-1.67-.83-1.9-3.08-1.9h-11.36c-1.88,0-2.33.23-2.86,1.83l-2.63,7.99c-1.13,3.43-1.65,5.48-1.65,6.32,0,.91.38,1.37,2.18,1.52l2.48.23c.53.38.53,1.6-.15,1.9-1.96-.15-4.29-.15-7.82-.23-2.48,0-5.19.15-7.22.23-.45-.3-.6-1.52-.15-1.9l2.48-.23c1.81-.15,3.46-.99,4.51-3.73,1.35-3.5,3.46-8.45,6.62-16.98l7.67-20.55c1.05-2.74,1.5-4.19,1.28-5.41,1.8-.53,3.08-1.9,3.91-2.89.45,0,.98.15,1.13.68.98,3.35,2.18,6.85,3.31,10.2l10.3,30.6c2.18,6.55,3.16,7.69,6.39,8.07l2.03.23c.53.38.38,1.6,0,1.9-3.08-.15-5.72-.23-9.1-.23-3.61,0-6.47.15-8.65.23-.6-.3-.68-1.52-.15-1.9l2.18-.23c1.58-.15,2.63-.61,2.63-1.37,0-.84-.38-2.21-.98-4.03l-3.31-10.35ZM21.86,93.63c-.6,1.75-.53,1.83,1.58,1.83h9.25c2.18,0,2.33-.3,1.65-2.36l-4.06-12.41c-.6-1.83-1.28-3.88-1.73-4.8h-.15c-.23.38-.98,2.21-1.8,4.49l-4.74,13.25Z"/><path fill="#fff" d="M50.83,75.89c-1.73-4.26-2.86-5.86-6.09-6.24l-1.35-.15c-.53-.46-.45-1.52.15-1.9,2.18.15,4.59.23,7.82.23s5.94-.08,9.1-.23c.53.3.68,1.45.15,1.9l-1.13.15c-2.86.38-3.46.84-3.54,1.45.15.76,1.43,4.87,3.76,10.66,3.46,8.83,6.92,17.59,10.68,26.26,2.33-5.02,5.49-12.87,7.22-16.9,2.18-5.18,5.72-13.78,6.99-17.05.6-1.6.68-2.44.68-2.97s-.75-1.14-3.38-1.45l-1.35-.15c-.53-.46-.38-1.6.15-1.9,2.11.15,4.96.23,7.82.23,2.48,0,4.81-.08,7.3-.23.53.3.53,1.52.15,1.9l-2.26.15c-1.81.15-2.93,1.07-3.91,2.66-2.11,3.58-5.04,9.74-8.42,17.51l-4.06,9.36c-3.01,7-6.54,15.83-7.82,19.87-.23.15-.53.23-.83.23-.38,0-.75-.08-1.13-.23-.83-3.2-2.18-6.93-3.46-10.12l-13.24-33.04Z"/><path fill="#fff" d="M105.44,79.39c0-8.07-.15-9.36-4.59-9.74l-1.88-.15c-.45-.3-.3-1.67.15-1.9,3.76.15,6.32.23,9.48.23s5.57-.08,9.33-.23c.45.23.6,1.6.15,1.9l-1.88.15c-4.44.38-4.59,1.67-4.59,9.74v27.1c0,8.07.15,9.13,4.59,9.67l1.88.23c.45.3.3,1.67-.15,1.9-3.76-.15-6.32-.23-9.33-.23-3.16,0-5.72.08-9.48.23-.45-.23-.6-1.45-.15-1.9l1.88-.23c4.44-.53,4.59-1.6,4.59-9.67v-27.1Z"/><path fill="#fff" d="M154.85,100.4c-.53-1.67-.83-1.9-3.08-1.9h-11.36c-1.88,0-2.33.23-2.86,1.83l-2.63,7.99c-1.13,3.43-1.65,5.48-1.65,6.32,0,.91.38,1.37,2.18,1.52l2.48.23c.53.38.53,1.6-.15,1.9-1.96-.15-4.29-.15-7.82-.23-2.48,0-5.19.15-7.22.23-.45-.3-.6-1.52-.15-1.9l2.48-.23c1.81-.15,3.46-.99,4.51-3.73,1.35-3.5,3.46-8.45,6.62-16.98l7.67-20.55c1.05-2.74,1.5-4.19,1.28-5.41,1.8-.53,3.08-1.9,3.91-2.89.45,0,.98.15,1.13.68.98,3.35,2.18,6.85,3.31,10.2l10.3,30.6c2.18,6.55,3.16,7.69,6.39,8.07l2.03.23c.53.38.38,1.6,0,1.9-3.08-.15-5.72-.23-9.1-.23-3.61,0-6.47.15-8.65.23-.6-.3-.68-1.52-.15-1.9l2.18-.23c1.58-.15,2.63-.61,2.63-1.37,0-.84-.38-2.21-.98-4.03l-3.31-10.35ZM139.95,93.63c-.6,1.75-.53,1.83,1.58,1.83h9.25c2.18,0,2.33-.3,1.65-2.36l-4.06-12.41c-.6-1.83-1.28-3.88-1.73-4.8h-.15c-.23.38-.98,2.21-1.8,4.49l-4.74,13.25Z"/><path fill="#fff" d="M192.5,106.64c0,7.99.15,9.13,4.51,9.52l2.41.23c.45.3.3,1.67-.15,1.9-4.29-.15-6.84-.23-9.85-.23s-5.64.08-10.45.23c-.45-.23-.6-1.52,0-1.9l2.71-.23c4.29-.38,4.66-1.52,4.66-9.52v-34.03c0-2.36,0-2.44-2.26-2.44h-4.14c-3.23,0-7.37.15-9.25,1.9-1.8,1.67-2.56,3.35-3.38,5.25-.6.46-1.65.08-1.96-.53,1.2-3.42,2.33-8.3,2.86-11.34.23-.15,1.2-.23,1.43,0,.45,2.44,2.93,2.36,6.39,2.36h30.46c4.06,0,4.74-.15,5.87-2.13.38-.15,1.2-.08,1.35.23-.83,3.12-1.35,9.29-1.13,11.57-.3.61-1.58.61-1.96.15-.23-1.9-.75-4.72-1.88-5.56-1.73-1.29-4.59-1.9-8.72-1.9h-5.34c-2.26,0-2.18.08-2.18,2.59v33.88Z"/><path fill="#fff" d="M224.09,79.39c0-8.07-.15-9.36-4.59-9.74l-1.88-.15c-.45-.3-.3-1.67.15-1.9,3.76.15,6.32.23,9.48.23s5.57-.08,9.33-.23c.45.23.6,1.6.15,1.9l-1.88.15c-4.44.38-4.59,1.67-4.59,9.74v27.1c0,8.07.15,9.13,4.59,9.67l1.88.23c.45.3.3,1.67-.15,1.9-3.76-.15-6.32-.23-9.33-.23-3.16,0-5.72.08-9.48.23-.45-.23-.6-1.45-.15-1.9l1.88-.23c4.44-.53,4.59-1.6,4.59-9.67v-27.1Z"/><path fill="#fff" d="M242.34,93.47c0-15.22,11.28-26.87,26.77-26.87,17.37,0,26.1,12.71,26.1,26.11,0,15.38-11.58,26.57-26.1,26.57-16.7,0-26.77-12.1-26.77-25.81ZM287.69,95.07c0-12.56-5.49-26.11-19.86-26.11-7.82,0-17.98,5.41-17.98,22.08,0,11.27,5.42,25.88,20.23,25.88,9.03,0,17.6-6.85,17.6-21.85Z"/><path fill="#fff" d="M348.76,105.12c0,2.28,0,11.34.23,13.32-.15.46-.6.84-1.43.84-.9-1.29-3.08-3.96-9.63-11.5l-17.45-20.1c-2.03-2.36-7.15-8.6-8.72-10.28h-.15c-.3.91-.38,2.66-.38,4.95v16.6c0,3.58.08,13.47,1.35,15.76.45.84,1.96,1.29,3.84,1.45l2.33.23c.45.61.38,1.52-.15,1.9-3.38-.15-6.02-.23-8.8-.23-3.16,0-5.19.08-7.82.23-.53-.38-.6-1.45-.15-1.9l2.03-.23c1.73-.23,2.93-.68,3.31-1.52,1.05-2.74.98-12.03.98-15.68v-22c0-2.13-.08-3.73-1.65-5.48-1.05-1.07-2.86-1.6-4.66-1.83l-1.28-.15c-.45-.46-.45-1.6.15-1.9,3.16.23,7.15.23,8.5.23,1.2,0,2.48-.08,3.46-.23,1.5,3.88,10.38,13.93,12.86,16.75l7.29,8.3c5.19,5.86,8.88,10.12,12.41,13.78h.15c.3-.38.3-1.6.3-3.2v-16.29c0-3.58-.08-13.47-1.5-15.76-.45-.69-1.65-1.14-4.66-1.52l-1.28-.15c-.53-.46-.45-1.67.15-1.9,3.46.15,6.02.23,8.88.23,3.23,0,5.19-.08,7.75-.23.6.38.6,1.45.15,1.9l-1.05.15c-2.41.38-3.91.99-4.21,1.6-1.28,2.74-1.13,12.18-1.13,15.68v18.19Z"/></g></defs></svg>
+
+<div id="deck">
+
+<!-- 1: TITLE -->
+<div class="slide title-slide active" data-notes="Welcome everyone. This session is about getting aligned before you go out and start flying. You've been through the technical ground school — this is about how Coulson does things, what we expect from you, and how to make the most of the air attack role.">
+<div class="slide-title">Air Attack Pilot<br>Orientation</div>
+<div class="title-rule"></div>
+<div class="subtitle">COULSON AVIATION &mdash; US OPERATIONS</div>
+<div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div>
+</div>
+
+<!-- 2 -->
+<div class="slide" data-notes="The reason we're doing this is simple. Our tanker crews have a captain — a new pilot sits in the right seat and learns the ropes on the job. We don't have that with air attack. You're out there single pilot, and historically we weren't doing enough to make sure everyone was operating the same way. So we're sitting down together now to go through how Coulson does this, what we expect, and what you need to know before you head out."><div class="section-label">Opening</div><div class="slide-title">Why We're Here</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Getting everyone on the same page</p><p class="supporting">Tanker crews have a captain to learn from — you don't have that luxury</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 3 -->
+<div class="slide" data-notes="This is the message I really want to land. The air attack seat is the best seat in the house for learning aerial firefighting. You're overhead for four hours at a time. You've got one of the most experienced ground firefighters in the country sitting next to you. You're watching fire behavior develop. You're hearing target descriptions. You're seeing how tactical decisions play out. When you move to the tanker, that's all gone — you're on scene for five minutes and then you're back to the reload base. Use this time. It's more valuable than most people realize until it's gone."><div class="section-label">Opening</div><div class="slide-title">The Opportunity</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">The best seat in the house to learn aerial firefighting</p><p class="supporting">After a couple of seasons, you should be able to teach the class</p><p class="supporting">Merit-based progression to air tanker</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 4 -->
+<div class="slide" data-notes="You represent this company every time you walk onto a tanker base, every time you key the mic, every interaction you have with agency personnel. How you carry yourself matters. We've built a strong reputation and we need you to uphold it."><div class="section-label">The Coulson Standard</div><div class="slide-title">What Britt Coulson Expects</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Professionalism &mdash; Initiative &mdash; Consistency</p><p class="supporting">You represent a culture we've worked hard to build</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 5 -->
+<div class="slide" data-notes="We are guests at every tanker base we operate from. Clean up after yourself. Be polite. Wear the Coulson polo and closed-toe shoes — present yourself in a way that reflects well on the company. Build relationships with the people you work around. These are the techs who keep your airplane flying, the base personnel who support your operation, and the agency staff who make it all happen. Treat them well."><div class="section-label">The Coulson Standard</div><div class="slide-title">Tanker Base Conduct</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Be a good guest</p><div class="items"><span>Coulson polo</span><span>Closed-toe shoes</span><span>Clean up after yourself</span><span>Build relationships</span></div></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 6 -->
+<div class="slide" data-notes="Just because you're single pilot doesn't mean you're on your own. You can come to me, you can talk to our Chief of Training, you can talk to your Assistant Chief Pilot. We have an open door. If something is going on in the field — a difficult ATGS relationship, an operational issue, something you're unsure about — tell us. We'd rather hear about it early and help you work through it than find out later when it's become a real problem. We're going to hold you accountable, but we're also going to have your back."><div class="section-label">The Coulson Standard</div><div class="slide-title">Your Support Structure</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">You have a team behind you</p><p class="supporting">Open door — Chief Pilot, Chief of Training, Assistant Chief Pilot</p><p class="supporting">Tell us early</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 7 -->
+<div class="slide" data-notes="This is probably the most important slide in this whole presentation. Your primary job is to fly the airplane and provide a stable platform. But if that's ALL you do, you're missing the point. You're overhead for four hours at a time. You've got a front-row seat to watch fire behavior develop, to hear how tactical decisions are made, to see how retardant works on the fire. This is your education for the tanker. The pilots who get the most out of this role are the ones who are paying attention to all of it — not just flying the orbit."><div class="section-label">The Coulson Standard</div><div class="slide-title">Being Involved</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Don't just fly the plane — learn the mission</p><p class="supporting">You are part of the aerial supervision team</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 8 -->
+<div class="slide" data-notes="If you ask an ATGS who their favorite pilot is, they'll almost always tell you it's the one who was engaged. The one who wanted to learn. The one who asked questions during transit and at the debrief. They value that, and those relationships matter in this business. The fire world is small. Your reputation — good or bad — follows you. Be the pilot people want to work with."><div class="section-label">The Coulson Standard</div><div class="slide-title">The ATGS Relationship</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Be the pilot they ask for by name</p><div class="items"><span>Be curious</span><span>Ask questions</span><span>Debrief every mission</span></div><p class="supporting">The fire world is small</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 9 -->
+<div class="slide" data-notes="When the availability time hits, you need to be ready to go. That means showing up early enough to have the airplane preflighted, fueled, and ready. Not standing out on the ramp doing a walk-around when the phone rings. Stay aware of the weather, know what's going on in your area, and have your gear staged so that when dispatch calls, you can be airborne quickly."><div class="section-label">How We Operate</div><div class="slide-title">Daily Readiness</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Ready at start time — not getting ready at start time</p><div class="items"><span>Weather awareness</span><span>Gear staged</span><span>Aircraft fueled</span></div></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 10 -->
+<div class="slide" data-notes="The FRAT is a living document throughout the day. You start it during your walk-around, update it when conditions change or after dispatch, and finalize it at end of day. Before you launch on a mission, you brief with your ATGS — what are the objectives, what frequencies are we on, how are we dividing the workload. You are not cleared for dispatch until both the dispatch form and FRAT are complete."><div class="section-label">How We Operate</div><div class="slide-title">Dispatch and Mission Prep</div><div class="title-rule"></div><div class="slide-body"><p class="supporting">FRAT — a living document throughout the day</p><p class="supporting">Pre-mission brief with ATGS</p><p class="key-line">Dispatch form + FRAT finalized = cleared for dispatch</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 11 -->
+<div class="slide" data-notes="Admin consistency matters because you're all operating independently. We need everyone doing things the same way. EFL dailies go out the same evening — not the next morning, not two days later. Use the standard company email signature. The content in your daily email matters — include the relevant information. Your flight times need to match the ATGS records to the minute. If there's a discrepancy, it creates problems. And remember — all times are local, not UTC."><div class="section-label">How We Operate</div><div class="slide-title">Administrative Standards</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">EFL dailies — same evening, every evening</p><p class="supporting">Standard email signature and format</p><p class="supporting">Flight times match ATGS records — to the minute</p><p class="supporting">All times in LOCAL</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+
+<!-- 13 -->
+<div class="slide" data-notes="When you hand off to the next crew, the handover form needs to be complete and sent to the right people. Think about what the inbound pilot needs to know: aircraft status, any discrepancies, what's been going on operationally, anything unusual. They should be able to read your handover and step into the operation seamlessly."><div class="section-label">How We Operate</div><div class="slide-title">Crew Change<br>and Handover</div><div class="title-rule"></div><div class="slide-body"><p class="supporting">Handover form at every crew change</p><p class="key-line">No surprises for the inbound crew</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 14 -->
+<div class="slide" data-notes="The Citation Operations Field Guide covers the day-to-day procedures you'll need to reference — fuel cards, what to do if the airplane goes out of service, FMC database updates, expense reports, travel booking, and key contacts. It's there for you when you need it."><div class="section-label">How We Operate</div><div class="slide-title">Citation Operations<br>Field Guide</div><div class="title-rule"></div><div class="slide-body"><p class="supporting">Day-to-day operational reference</p><div class="items"><span>Fuel</span><span>OOS</span><span>FMC</span><span>Base ops</span><span>Travel</span><span>Contacts</span></div></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 15 -->
+<div class="slide" data-notes="Walk through what contracts we have this year, where they are, whether they're exclusive use or call when needed, and what that means for the pilots' day-to-day. Talk about where they can expect to be based and the kinds of flights they may be asked to do outside their normal contract tasking — repositioning, ferry flights, maintenance runs. Set expectations: long days, possible diversions, and being ready to go wherever the work is."><div class="section-label">US Operations Context</div><div class="slide-title">The US Fire Season</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Contracts, basing, and what to expect</p><p class="supporting">Exclusive use vs. call when needed</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 16 -->
+<div class="slide" data-notes="The US wildland fire dispatch system is organized around Geographic Area Coordination Centers — GACCs. There are several across the country, and they coordinate resource ordering within their areas. Above them is NIFC — the National Interagency Fire Center — which handles national-level coordination and resource movement between geographic areas. When things get busy, resources get moved around the country. Understanding this system helps you understand why you might get sent somewhere unexpected."><div class="section-label">US Operations Context</div><div class="slide-title">GACC Structure<br>and Dispatch</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">National &rarr; Geographic Area &rarr; Local Unit</p><p class="supporting">How you get tasked</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 17 -->
+<div class="slide" data-notes="You may be working under contracts with USFS, BLM, CAL FIRE, or other agencies. Each has their own way of doing things. The key thing to understand is that these are partnerships. Agency personnel — your ATGS, dispatch, tanker base managers — are people you work alongside. Treat them as partners. Build those relationships. It makes everything work better."><div class="section-label">US Operations Context</div><div class="slide-title">Agency Relationships</div><div class="title-rule"></div><div class="slide-body"><div class="items" style="margin-bottom:16px"><span>USFS</span><span>BLM</span><span>CAL FIRE</span></div><p class="key-line">Partners, not customers</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 18 -->
+<div class="slide" data-notes="All of our flights under USFS agreements operate under Part 135 — no exceptions. Squawk 1255 for firefighting ops. One thing to be aware of when it gets busy: just because you've been dispatched to an incident doesn't mean you can fly through another incident's TFR on the way there. Each TFR is its own airspace restriction. NWCG PMS 505 is the national standard for aerial supervision — it defines how all of this is supposed to work."><div class="section-label">US Operations Context</div><div class="slide-title">Regulatory Framework</div><div class="title-rule"></div><div class="slide-body"><div class="items" style="margin-bottom:16px"><span>FAR Part 135</span><span>Squawk 1255</span><span>NWCG PMS 505</span></div><p class="supporting">TFRs — one incident's dispatch does not clear another's TFR</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 19 -->
+<div class="slide" data-notes="Your primary responsibility is flying the airplane and making it a smooth ride for the ATGS. Anticipate what they're going to need to see. Understand where the aircraft needs to be positioned — not just to watch the drop, but where on the fire they need to be at a certain time. If it's a large fire and you hear air-to-ground from division alpha on the other side calling for your ATGS, and you can tell you're not needed immediately where you are, start getting the airplane pointed in that direction. Don't wait to be told. Think about fuel state, weather, system health — if something is developing, say it early. Stay ahead of the mission so the ATGS can focus on the tactics."><div class="section-label">The Air Attack Role</div><div class="slide-title">Your Job</div><div class="title-rule"></div><div class="slide-body"><div class="items" style="margin-bottom:16px"><span>Stable platform</span><span>Separation</span><span>Anticipate</span></div><p class="key-line">Make it a smooth ride — stay ahead of the mission</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 20 -->
+<div class="slide" data-notes="Good CRM in the air attack means being a proactive partner. You're monitoring all the frequencies — if you hear traffic that the ATGS might have missed, call it out on intercom. If fuel state is becoming a factor, don't wait until it's critical. If you see weather building or you've got a system anomaly, say something. Withholding information — even unintentionally, by just not speaking up — erodes the CRM relationship. You back each other up. The ATGS handles tactical communication, but if they're task-saturated and a critical call comes in, you can answer it and brief them on intercom. Tactical radio use is about knowing when it's appropriate — safety of flight, always."><div class="section-label">The Air Attack Role</div><div class="slide-title">CRM in the<br>Air Attack Mission</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">If something is developing, say it</p><p class="supporting">Monitor, back up the ATGS, use tactical radio when appropriate</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 22: STAT GRID -->
+<div class="slide" data-notes="You covered all of this in detail during the ground school. These are the key numbers to keep in your head. 2,500 AGL standard orbit altitude, right-hand pattern. 1,000 feet vertical separation. 500 AGL absolute hard floor. 170 knots or less in the FTA. And never enter an FTA without clearance — communicate, get clearance, comply."><div class="section-label">The Air Attack Role</div><div class="slide-title">Key Tactical Reminders</div><div class="title-rule"></div><div class="slide-body"><div class="stat-grid"><div><div class="stat-value">2,500 AGL</div><div class="stat-label">Standard orbit, right pattern</div></div><div><div class="stat-value">1,000 FT</div><div class="stat-label">Vertical separation</div></div><div><div class="stat-value">500 AGL</div><div class="stat-label">Hard floor</div></div><div><div class="stat-value">170 KIAS</div><div class="stat-label">Within FTA</div></div></div><p class="key-line">Communicate &mdash; Clearance &mdash; Comply</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 23 -->
+<div class="slide" data-notes="When you're monitoring four frequencies at once, use the individual volume controls on the audio panel to manage them. Air-to-air is your highest priority — keep it loudest. Dispatch is probably your lowest priority — turn it down so it's not competing. But never turn a frequency off. You are the backup for the ATGS. Your collective role is managing the airspace and maintaining situational awareness. If you've got a radio turned off, you can't hear what's going on, and you can't back them up."><div class="section-label">The Air Attack Role</div><div class="slide-title">Audio Panel<br>Management</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Prioritize with volume — never turn a frequency off</p><p class="supporting">Air-to-air highest &rarr; Dispatch lowest</p><p class="supporting">You are the backup</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 24 -->
+<div class="slide" data-notes="This is a direct message. The airplane has an operating envelope, and so do you. Yours is smaller. If a pilot is out of touch with their own ability — if they think they're hot shit and they're really not — that leads them to do things in an airplane that are beyond their skill level. And that's how people get killed in this business. Humility isn't weakness. It's what keeps you alive. The pilot who thinks they're beyond learning is the one who puts themselves in a situation they can't handle. That mindset starts here. Now. Be the pilot who knows what they don't know and keeps working to close the gap."><div class="section-label">Safety &amp; Bright Lines</div><div class="slide-title">Know Your Limits</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">Your envelope — not the airplane's</p><p class="supporting">That mindset starts here</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 25 -->
+<div class="slide" data-notes="If you make a decision based on safety, we back you. We'll want to understand the situation — we'll ask questions so we can learn from it — but you will never be penalized for making the safe call. We would rather you make a conservative call and have a conversation about it than push into something that doesn't feel right. Report through SMS when something happens — near misses, safety concerns, anything. That's how we learn and how we get better as a company."><div class="section-label">Safety &amp; Bright Lines</div><div class="slide-title">Safety Culture</div><div class="title-rule"></div><div class="slide-body"><p class="key-line">We back you — make the safe call</p><p class="supporting">Report through SMS</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 26: BRIGHT LINES -->
+<div class="slide" data-notes="We've done well hiring good people and I'm not standing up here lecturing you about basic decency. But I do want to be clear about where the lines are. Integrity is non-negotiable. If something happened — you made a mistake, something went wrong — tell us. We'll work through it. Lying about it is worse than whatever the thing was. Willful disregard for SOPs, representing the company poorly, conduct that undermines the trust of the people you work with — those are bright lines. This isn't about operational mistakes. Everyone makes those and we'll work through them together. This is about character."><div class="section-label">Safety &amp; Bright Lines</div><div class="slide-title">Bright Lines</div><div class="title-rule"></div><div class="slide-body"><ul class="bright-list"><li>Integrity</li><li>Willful disregard for SOPs</li><li>Representing Coulson poorly</li><li>Conduct that undermines trust</li></ul><p class="key-line">Mistakes we work through — this is about character</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+<!-- 27: FRAT -->
+<div class="slide" data-notes="The FRAT gives you a structured way to assess risk. Green means go. Yellow means you need to identify and apply mitigations before proceeding. Red means the mission is not authorized. And at any point during a mission, either crew member can call a tactical pause — no penalty, no judgment. If something doesn't feel right, say so. We would rather have a conversation about it than deal with an incident."><div class="section-label">Safety &amp; Bright Lines</div><div class="slide-title">FRAT and<br>Tactical Pause</div><div class="title-rule"></div><div class="slide-body"><div class="frat-row"><div class="frat-item"><div class="frat-dot" style="background:var(--success)"></div><span class="frat-label">Proceed</span></div><div class="frat-item"><div class="frat-dot" style="background:var(--caution)"></div><span class="frat-label">Mitigate</span></div><div class="frat-item"><div class="frat-dot" style="background:var(--error)"></div><span class="frat-label">Not authorized</span></div></div><p class="supporting">Either crew member can call a tactical pause</p><p class="key-line">We'd rather have a conversation than an incident</p></div><div class="logo"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div></div>
+
+
+<!-- 30: CLOSING -->
+<div class="slide closing-slide" data-notes="You're part of something special at Coulson. We're investing in you and we take that seriously. The air attack seat is the best seat in the house to learn aerial firefighting — use it for what it's worth. Perform well, learn constantly, represent Coulson with pride. The tanker seat is earned, not given. This is where you earn it. Open the floor for questions.">
+<div class="logo" style="width:220px;opacity:0.4;margin-bottom:36px"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div>
+<div class="slide-title">Chief Pilot's Message</div>
+<div class="title-rule"></div>
+<div class="subtitle">QUESTIONS</div>
+</div>
+
+</div>
+
+<div class="logo-fixed" id="logoFixed"><svg viewBox="0 0 361.61 123.63"><use href="#cl"/></svg></div>
+<div class="notes-panel" id="notesPanel"><div class="notes-label">Speaker Notes</div><div class="notes-text" id="notesText"></div></div>
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter" id="counter">01 / 29</div>
+
+<script>
+// Generate noise texture once via canvas, then inject into each slide as dither
+(function(){
+  const c=document.createElement('canvas');c.width=256;c.height=256;
+  const ctx=c.getContext('2d');
+  const img=ctx.createImageData(256,256);
+  for(let i=0;i<img.data.length;i+=4){
+    const v=Math.random()*255;
+    img.data[i]=img.data[i+1]=img.data[i+2]=v;
+    img.data[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  const url=c.toDataURL();
+  document.querySelectorAll('.slide').forEach(s=>{
+    const d=document.createElement('div');
+    d.className='noise-dither';
+    d.style.backgroundImage='url('+url+')';
+    d.style.backgroundSize='256px 256px';
+    s.prepend(d);
+  });
+})();
+// Inject smooth terrain ridgelines into each slide
+document.querySelectorAll('.slide').forEach(s=>{
+  const r=document.createElement('div');
+  r.className='ridgelines';
+  r.innerHTML=`
+    <svg viewBox="0 0 1200 340" preserveAspectRatio="none" style="height:34vh;opacity:0.04">
+      <path d="M0,340 L0,200 Q100,140 200,170 Q300,200 400,150 Q500,100 600,130 Q700,160 800,110 Q900,60 1000,100 Q1100,140 1200,90 L1200,340Z" fill="#E8EAED"/>
+    </svg>
+    <svg viewBox="0 0 1200 340" preserveAspectRatio="none" style="height:26vh;opacity:0.07">
+      <path d="M0,340 L0,180 Q150,130 250,160 Q400,210 500,140 Q600,80 750,120 Q850,150 950,90 Q1050,50 1200,110 L1200,340Z" fill="#E8EAED"/>
+    </svg>
+    <svg viewBox="0 0 1200 340" preserveAspectRatio="none" style="height:19vh;opacity:0.10">
+      <path d="M0,340 L0,190 Q200,150 350,180 Q500,220 650,160 Q800,100 950,140 Q1100,170 1200,130 L1200,340Z" fill="#E8EAED"/>
+    </svg>`;
+  s.prepend(r);
+});
+const slides=document.querySelectorAll('.slide'),counter=document.getElementById('counter'),progress=document.getElementById('progress'),notesPanel=document.getElementById('notesPanel'),notesText=document.getElementById('notesText');let cur=0,notesOn=false;
+const logoFixed=document.getElementById('logoFixed');
+function go(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(n,slides.length-1));slides[cur].classList.add('active');counter.textContent=`${String(cur+1).padStart(2,'0')} / ${slides.length}`;progress.style.width=`${((cur+1)/slides.length)*100}%`;notesText.textContent=slides[cur].getAttribute('data-notes')||'';logoFixed.style.display=slides[cur].classList.contains('title-slide')||slides[cur].classList.contains('closing-slide')?'none':'block'}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(cur+1)}else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(cur-1)}else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);else if(e.key==='n'||e.key==='N'){notesOn=!notesOn;notesPanel.classList.toggle('visible',notesOn)}});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50)go(cur+(d>0?1:-1))});
+go(0);
+</script>
+</body>
+</html>
